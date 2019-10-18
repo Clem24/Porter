@@ -1,0 +1,13 @@
+.pagination>li.active>a {
+  background-color: darkslategray !important;
+  color: white !important;
+  border-color: darkslategray !important;
+}
+
+.pagination>li>a {
+  color: darkslategray !important;
+}
+
+a {
+color: darkslategray;
+}

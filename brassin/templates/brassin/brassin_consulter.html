@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      	<h1>Brassin</h1>
+      	<h4>Brassin {{ brassin.id }}
+			<a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_update' brassin.id %}"><i class="fas fa-edit"></i></a>
+			<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'brassin_list' %}"><i class="fas fa-backspace"></i></a>
+		</h4>
+		<h5>{{ brassin.date_brassin }}</h5>
+    </div>
+</div>
+
+<div class="row ">
+	<div class="col-sm-3">
+		<!--- PROFIL --------------------------------------------------------------------------->	
+		<div class="card h-100">
+		  <h4 class="card-header">PROFIL</h4>
+
+		  <div class="card-body">	
+		  	<h4><a href="{% url 'recette_consult' brassin.recette.id %}">{{ brassin.recette }}</a></h4><br/>
+			<p>Alcool: {{ brassin.taux_alcool|floatformat }} %</p>
+			<p>IBU: {{ brassin.IBU|floatformat}}</p>
+			<p>EBC: {{ brassin.EBC|floatformat:"0" }}</p>
+			<p>Calories/L: {{ brassin.calories|floatformat }}</p>
+			<br/>			
+
+		  </div>
+		</div>
+	</div>
+
+	<div class="col-sm-9">
+		<div class="card h-100">
+		  <h4 class="card-header">NOTES</h4>
+
+		  <div class="card-body">
+			<p>{{ brassin.notes }}</p>	
+		  </div>
+		</div>
+	</div>
+
+</div>
+
+<br/>
+
+<div class="row ">
+
+	<!--- PRODUCTION --------------------------------------------------------------------------->
+	<div class="col-sm-6">
+		<div class="card h-100">
+		  <h4 class="card-header">PRODUCTION</h4>
+
+		  <div class="card-body">	
+		  	
+			<table class="table table-hover table-responsive">
+				<thead>
+				    <tr><th>Stade</th><th>Volume</th><th>Densité</th><th>Temps</th></tr>
+				</thead>
+				<tbody>
+					<tr><td>Empatage</td><td>{{ brassin.volume_empatage }}</td><td>{{ brassin.densite_avant_ebullition }}</td><td>{{brassin.temps_empatage}}</td></tr>
+					<tr><td>Ebullition</td><td>{{ brassin.volume_mout }}</td><td>{{ brassin.densite_initiale }}</td><td>{{ brassin.temps_ebullition }}</td></tr>
+					<tr><td>Fermentation</td><td>{{ brassin.volume_cuve_fermentation }}</td><td>{{ brassin.densite_finale }}</td><td>{{ brassin.temps_fermentation }}</td></tr>
+				</tbody>
+			</table>
+
+			<br/>
+
+			Starter: {{brassin.volume_starter}} L<br/>
+			Rincage des dreches: {{brassin.volume_rincage_dreches}} L<br/><br/>
+				
+			Bouteilles : {{ brassin.nombre_bouteilles }} (vendues: <a href="{% url 'ventes_list' %}">{{ brassin.bouteilles_vendues }}</a>)<br/>	
+			Rendement :  {{ brassin.rendement|floatformat:"0" }} %<br/>
+			Attenuation : {{ brassin.attenuation|floatformat:"0" }} %<br/>
+			Prix/L : {{ brassin.cout_brassin|floatformat:2}} €/L<br/><br/>
+
+		  </div>
+
+		</div>
+	</div>
+
+	<!--- INGREDIENTS --------------------------------------------------------------------------->
+	<div class="col-sm-6">
+		<div class="card h-100">
+		  <h4 class="card-header">INGREDIENTS<a class="btn btn-outline-dark btn-sm float-right" href="{% url 'brassin_ingredient_add' brassin.id %}"><i class="fas fa-plus"></i></a></h4>
+
+		  <div class="card-body">
+
+			<table class="table table-hover table-responsive">
+				<thead>
+				    <tr><th>Type</th><th>Variété</th><th>Quantité</th><th></th></tr>
+				</thead>
+				<tbody>
+					{% for ingredient in brassin_ingredient.all %}
+					
+					<tr><td>{{ ingredient.ingredient.type_ingredient }}</td><td><a data-toggle="tooltip" title="{{ ingredient.ingredient.propriete }}">{{ ingredient.ingredient.variete }}</a></td><td> {{ ingredient.quantite|floatformat:3 }} kg</td><td><a class="btn btn-outline-danger btn-sm" href="{{ request.get_full_path }}delete-ingredient-{{ingredient.id}}"><i class="fas fa-times"></i></a></td></tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+		  </div>
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}

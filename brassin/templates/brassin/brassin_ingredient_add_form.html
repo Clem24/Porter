@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{{ form.media }} 
+{% load crispy_forms_tags %}
+
+<div class="jumbotron jumbotron-fluid">
+  <div class="container">
+    <h1 class="page-header">Brassin</h1>
+    <h4>Brassin {{ form.brassin.value }}<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'brassin_consult' form.brassin.value %}"><i class="fas fa-backspace"></i></a>
+    </h4>
+    <h5>Ajouter ingredient</h5>
+  </div>
+</div>
+
+<div class="card h-100">
+      
+    <div class="card-body">
+
+        <form action="" method="POST">
+            {% csrf_token %}
+
+            {{ form.brassin|as_crispy_field }}
+
+             <div class="row">
+                <div class="col-4">
+                    {{ form.ingredient|as_crispy_field }}
+                </div>
+                <div class="col-4">
+                    {{ form.quantite|as_crispy_field }}
+                </div>
+                <div class="col-4">
+                    {{ form.temps_infusion|as_crispy_field }}
+                </div>
+                <div class="col-4">
+                    {{ form.achete|as_crispy_field }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-info">Ajouter</button>
+        </form>
+
+        <br/>
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-success {{ message.tags }}" role="alert">
+            {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+
+    </div>
+    
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'brassin/css/style.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<div class="jumbotron jumbotron-fluid">
+  <div class="container">
+    <h1 class="page-header">Ventes</h1>
+  </div>
+</div>
+
+<a class="btn btn-info btn-sm" href="{% url 'vente_create' %}"><i class="fas fa-plus"></i>  Ajouter vente</a>
+<br/><br/>
+
+{# TABLEAU INGREDIENTS #}
+<div class="md-form mt-0">
+  <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Vente-table-filter">
+</div>
+<br/>
+
+<table class="table" id="Vente-table">
+  <thead class="thead-light">
+    <tr>
+      <th>Date</th>
+      <th>Brassin</th>
+      <th>Bouteilles</th>
+      <th>Prix</th>
+      <th>Client</th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for vente in ventes %}
+    <tr>
+      <td>{{ vente.date_vente }}</td>
+      <td><a href="{% url 'brassin_consult' vente.brassin %}">{{ vente.brassin }}</a></td>
+      <td>{{ vente.quantite|floatformat}}</td>
+      <td>{{ vente.prix|floatformat }} €</td>
+      <td>{{ vente.client }}</td>
+      <td><a class="btn btn-outline-dark btn-sm" href="{% url 'vente_update' vente.id %}"><i class="fas fa-edit"></i></a></td>
+      <td><a class="btn btn-outline-danger btn-sm" href="{% url 'vente_delete' vente.id %}"><i class="fas fa-times"></i></a></td>
+    </tr>
+    {% empty %}
+      <tr>
+        <td colspan="7" class="text-center bg-warning">Pas encore de vente.</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+{% endblock %}

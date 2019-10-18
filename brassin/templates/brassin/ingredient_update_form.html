@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+{{ form.media }} 
+{% load crispy_forms_tags %}
+
+<div class="jumbotron jumbotron-fluid">
+  <div class="container">
+    <h1 class="page-header">Ingredients</h1>
+    <h4>{{ ingredient.variete }} - editer<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'ingredients_list' %}"><i class="fas fa-backspace"></i></a></h4>
+  </div>
+</div>
+
+<div class="card h-100">
+
+  <div class="card-body">
+
+    <form action="" method="post">
+      {% csrf_token %}
+
+      {{ form.type_ingredient|as_crispy_field }}
+      {{ form.variete|as_crispy_field }}
+      {{ form.prix_kg|as_crispy_field }}
+
+      <h4 id="title-ingredient-information-form">Informations ingredient</h4>
+      {{ form.ebc_min|as_crispy_field }}
+      {{ form.ebc_max|as_crispy_field }}
+      {{ form.acide_alpha|as_crispy_field }}
+      {{ form.attenuation_min|as_crispy_field }}
+      {{ form.attenuation_max|as_crispy_field }}
+
+      <button type="submit" class="btn btn-info">Editer</button>
+    
+    </form>
+
+  </div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+{% endblock %}

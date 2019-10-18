@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      	<h1>Recette</h1>
+      	<h4>{{ recette.nom }}
+			<a class="btn btn-outline-dark btn-sm" href="{% url 'recette_update' recette.id %}"><i class="fas fa-edit"></i></a>
+			<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'recettes_list' %}"><i class="fas fa-backspace"></i></a>
+		</h4>
+    </div>
+</div>
+
+<div class="row ">
+	<div class="col-sm-3">
+		<!--- PROFIL --------------------------------------------------------------------------->	
+		<div class="card h-100">
+		  <h4 class="card-header">PROFIL</h4>
+
+		  <div class="card-body">	
+		  	<p>Densité désirée: {{recette.densite_desire}}</p>
+		  	<p>Taux d'empatage:{{recette.taux_empatage}}</p>
+		  </div>
+		</div>
+	</div>
+
+	<div class="col-sm-9">
+		<div class="card h-100">
+		  <h4 class="card-header">NOTES</h4>
+
+		  <div class="card-body">
+		  	{{recette.notes}}
+		  </div>
+		</div>
+	</div>
+
+</div>
+
+<br/>
+
+<div class="row ">
+
+	<!--- INGREDIENTS --------------------------------------------------------------------------->
+	<div class="col-sm-6">
+		<div class="card h-100">
+		  <h4 class="card-header">INGREDIENTS<a class="btn btn-outline-dark btn-sm float-right" href="{% url 'recette_ingredient_add' recette.id %}"><i class="fas fa-plus"></i></a></h4>
+
+		  <div class="card-body">
+
+			<table class="table table-hover table-responsive" id="table_ing_recette">
+				<thead>
+				    <tr><th>Type</th><th>Variété</th><th>Quantité</th><th>kg</th><th></th></tr>
+				</thead>
+				<tbody>
+					{% for ingredient in recette_ingredient.all %}
+					
+					<tr><td>{{ ingredient.ingredient.type_ingredient }}</td><td><a data-toggle="tooltip" title="{{ ingredient.ingredient.propriete }}">{{ ingredient.ingredient.variete }}</a></td><td> {{ ingredient.quantite|floatformat:"0" }} %</td></td><td><td><a class="btn btn-outline-danger btn-sm" href="{{ request.get_full_path }}delete-ingredient-{{ingredient.id}}"><i class="fas fa-times"></i></a></td></tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+		  </div>
+		</div>
+	</div>
+
+	<!--- CALCULATION --------------------------------------------------------------------------->
+	<div class="col-sm-6">
+		<div class="card h-100">
+		  <h4 class="card-header">Calculs</h4>
+
+		  <div class="card-body">
+		  	 <div class="form-group row">
+              <label for volume_empatage_desire class="col-sm-5 col-form-label">Volume empatage </label>
+              <div class="col-sm-4">
+              <input name="volume_empatage_desire" id="volume_empatage_desire" class="form-control">
+              </div>
+            </div>
+            <input hidden value="{{recette.taux_empatage}}" id="taux_empatage">
+		  	
+		  	<div id="results">
+				<div class="form-group row">
+	              <label for volume_final class="col-sm-5 col-form-label">Volume final</label>
+	              <div class="col-sm-4">
+	              <input name="volume_final" id="volume_final" class="form-control">
+	            </div>
+            </div>
+		    </div>
+		  </div>
+		</div>
+	</div>
+
+</div>
+
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+{% endblock %}

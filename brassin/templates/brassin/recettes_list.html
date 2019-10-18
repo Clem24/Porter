@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'recette/css/style.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+  <div class="jumbotron jumbotron-fluid">
+    <div class="container">
+      <h1 class="page-header">Recette</h1>
+    </div>
+  </div>
+
+  <a class="btn btn-info btn-sm" href="{% url 'recette_create' %}"><i class="fas fa-plus"></i>  Ajouter recette</a>
+  <br/><br/>
+
+  {# TABLEAU RECETTES #}
+  <div class="md-form mt-0">
+    <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Recette-table-fil">
+  </div>
+  <br/>
+
+  <table class="table" id="Recette-table">
+    <thead class="thead-light">
+      <tr>
+        <th>#</th>
+        <th>Nom</th>
+        <th>Type</th>
+        <th>Nombre</th>
+
+        <th></th>
+        <th></th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for recette in recettes %}
+      <tr>
+        <td>{{ recette.id }}</td>
+        <td>{{ recette.nom }}</td>
+        <td>{{ recette.type_biere }}</td>
+        <td>{{ recette.nombre_brassin }}</td>
+
+        <td><a class="btn btn-outline-dark btn-sm" href="{% url 'recette_consult' recette.id %}"><i class="fas fa-eye"></i></a></td>
+        <td><a class="btn btn-outline-dark btn-sm" href="{% url 'recette_update' recette.id %}"><i class="fas fa-edit"></i></a></td>
+        <td><a class="btn btn-outline-danger btn-sm" href="{% url 'recette_delete' recette.id %}"><i class="fas fa-times"></i></a></td>
+      </tr>
+      {% empty %}
+        <tr>
+          <td colspan="10" class="text-center bg-warning">Pas encore de recette.</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+ 
+{% endblock %}
+
+{% block javascript %}
+  <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+{% endblock %}
