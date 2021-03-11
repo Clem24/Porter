@@ -26,8 +26,8 @@ SECRET_KEY = 'q_4ax!5xthr0(s39krmc&(b%5=8y7fd+kp&_^909gicj7q+03='
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = []
-
+ALLOWED_HOSTS = ['clem24.pythonanywhere.com']
+SESSION_COOKIE_AGE = 10800
 
 # Application definition
 
@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'brassin',
-    'widget_tweaks',
     'crispy_forms',
     'bootstrap_datepicker_plus',
 ]
@@ -110,6 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
+LOGIN_URL = '/brassin/connexion'
+
 LANGUAGE_CODE = 'fr'
 
 TIME_ZONE = 'Europe/Paris'
@@ -122,10 +123,15 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.0/howto/static-files/
+TIME_FORMAT = 'H:i'
+DATE_FORMAT = 'd/m/Y'
+DATE_INPUT_FORMATS = [
+    '%d-%m-%Y', '%d/%m/%Y', '%d/%m/%y',
+]
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
-SECRET_KEY = config('SECRET_KEY')
 
-DATE_FORMAT = 'd F Y'

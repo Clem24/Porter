@@ -10,58 +10,80 @@
 
   <div class="jumbotron jumbotron-fluid">
     <div class="container">
-      <h1 class="page-header">Brassin</h1>
+      <h1 class="page-header">Brassins</h1>
     </div>
   </div>
 
+  {# NOTES #}
+  <div class="container">
+  <a class="btn btn-info btn-sm" href="{% url 'note_create' %}"><i class="fas fa-plus"></i>  Ajouter note</a>
   <a class="btn btn-info btn-sm" href="{% url 'brassin_create' %}"><i class="fas fa-plus"></i>  Ajouter brassin</a>
-  <br/><br/>
-
-  {# TABLEAU BRASSINS #}
-  <div class="md-form mt-0">
-    <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Brassin-table-fil">
-  </div>
   <br/>
 
-  <table class="table" id="Brassin-table">
-    <thead class="thead-light">
-      <tr>
-        <th>#</th>
-        <th>Date brassin</th>
-        <th>Recette</th>
-        <th>Alcool</th>
-        <th>Densité i</th>
-        <th>Densité f</th>
-        <th>Bouteilles</th>
-        <th>Date embouteillage</th>
-        <th></th>
-        <th></th>
-        <th></th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for brassin in derniers_brassins %}
-      <tr>
-        <td>{{ brassin.id }}</td>
-        <td>{{ brassin.date_brassin }}</td>
-        <td><a href="{% url 'recette_consult' brassin.recette.id %}">{{ brassin.recette }}</a></td>
-        <td>{{ brassin.taux_alcool|floatformat }} %</td>
-        <td>{{ brassin.densite_initiale }}</td>
-        <td>{{ brassin.densite_finale }}</td>
-        <td>{{ brassin.nombre_bouteilles }}</td>
-        <td>{{ brassin.date_mise_bouteille }}</td>
-        <td><a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_consult' brassin.id %}"><i class="fas fa-eye"></i></a></td>
-        <td><a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_update' brassin.id %}"><i class="fas fa-edit"></i></a></td>
-        <td><a class="btn btn-outline-danger btn-sm" href="{% url 'brassin_delete' brassin.id %}"><i class="fas fa-times"></i></a></td>
-      </tr>
-      {% empty %}
-        <tr>
-          <td colspan="10" class="text-center bg-warning">Pas encore de brassin.</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
- 
+  <div class="row">
+
+    <br/>
+        <div class="card-deck">
+          {% for note in notes %}
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title">{{ note.titre }}     <a class="btn btn-outline-danger btn-sm float-right" href="{% url 'note_delete' note.id %}"><i class="fas fa-times"></i></a></h4>
+                <h6 class="card-subtitle mb-2 text-muted">{{ note.date }} - {{ note.auteur }}</h6>
+                <a data-toggle="tooltip" title="Editer" href="{% url 'note_update' note.id %}"><p class="card-text">{{ note.texte|linebreaksbr }}</p></a>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+
+  </div>
+  <br/>
+  {# BRASSINS #}
+
+  <div class="row">
+
+    <input class="form-control" type="text" placeholder="Rechercher" aria-label="Search" id="Brassin-table-filter">
+
+      <br/><br/>
+
+      <table class="table table-hover" id="Brassin-table">
+        <thead class="thead-light">
+          <tr>
+            <th>#</th>
+            <th>Date brassin</th>
+            <th>Recette</th>
+            <th>Alcool</th>
+            <th>Densité i</th>
+            <th>Densité f</th>
+            <th>Bouteilles</th>
+            <th>Date embouteillage</th>
+            <th></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for brassin in brassins %}
+          <tr>
+            <td>{{ forloop.revcounter }}</td>
+            <td><a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_consult' brassin.id %}">{{ brassin.date_brassin }}</a></td>
+            <td><a href="{% if brassin.recette %}{% url 'recette_consult' brassin.recette.id %}{% endif %}">{{ brassin.recette }}</a></td>
+            <td>{{ brassin.taux_alcool|floatformat }} %</td>
+            <td>{{ brassin.densite_initiale }}</td>
+            <td>{{ brassin.densite_finale }}</td>
+            <td>{{ brassin.nombre_bouteilles }}</td>
+            <td>{{ brassin.date_mise_bouteille }}</td>
+            <td><a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_update' brassin.id %}"><i class="fas fa-edit"></i></a></td>
+            <td><a class="btn btn-outline-danger btn-sm" href="{% url 'brassin_delete' brassin.id %}"><i class="fas fa-times"></i></a></td>
+          </tr>
+          {% empty %}
+            <tr>
+              <td colspan="10" class="text-center bg-warning">Pas encore de brassin.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
 {% endblock %}
 
 {% block javascript %}

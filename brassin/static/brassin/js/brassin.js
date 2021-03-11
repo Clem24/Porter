@@ -16,7 +16,7 @@ $(document).ready(function(){
     if (type_ing == 'levure'){$('#div_id_attenuation_min').show();$('#div_id_attenuation_max').show();}
     if (type_ing == 'houblon'){$('#div_id_acide_alpha').show();}
     if (type_ing == 'autre'){$('#title-ingredient-information-form').hide();}
- 
+
   //FILTER ON BRASSIN TABLE
   $("#Brassin-table-filter").on("keyup", function() {
     var value = $(this).val().toLowerCase();
@@ -49,103 +49,52 @@ $(document).ready(function(){
     });
   });
 
-  //INGREDIENT ADD FORM
-  $("#id_type_ingredient").on('change', function() {
-    var type_ing = $(this).val().toLowerCase();
-    $('#title-ingredient-information-form').show();
-    $('#div_id_ebc_min').hide();
-    $('#div_id_ebc_max').hide();
-    $('#div_id_attenuation_min').hide();
-    $('#div_id_attenuation_max').hide();
-    $('#div_id_acide_alpha').hide();
-
-    if (type_ing == 'malt'){$('#div_id_ebc_min').show();$('#div_id_ebc_max').show();}
-    if (type_ing == 'levure'){$('#div_id_attenuation_min').show();$('#div_id_attenuation_max').show();}
-    if (type_ing == 'houblon'){$('#div_id_acide_alpha').show();}
-    if (type_ing == 'autre'){$('#title-ingredient-information-form').hide();}
-   });
-
-  //INGREDIENT ADD FORM
-  $("#id_ingredient").on('change', function() {
-    var ing = $(this);
-    $('#div_id_temps_infusion').hide();
-    $('#id_quantite').prop("disabled", false);
-    var text = $("option:selected",ing).text(); 
-    if (text.match(/Levure.*/)) {$('#id_quantite').val(1);$('#id_quantite').prop("disabled", true);}
-    if (text.match(/Houblon.*/)){$('#div_id_temps_infusion').show();}
-   });
-
-  //CALCULS RECETTE
-  $("#volume_empatage_desire").on("keyup", function() {
-    var v_empatage = $(this).val();
-    var table=$("#table_ing_recette");
-    var rowLength = $("#table_ing_recette tr").length;
-    var taux_empatage =$("#taux_empatage").val();
-    var masse_tot = taux_empatage*v_empatage
-    //pour chaque ligne du tableau ingredients
-    for (var i=1; i<rowLength; i+=1)
-    {
-      //calculer les quantités
-
-      var percent = $('table tr:nth-child('+i+') td:nth-child(3)').text().substring(1, 3);
-      var quantite = masse_tot*parseFloat(percent)/100 ;
-
-      //écriture
-      $('table tr:nth-child('+i+') td:nth-child(4)').text(quantite);
-        
-      //var ID_INGREDIENT=dataRow[1]; 
-      //var TYPE=dataRow[0]; 
-      
-      //color case si pas assez de stock
-      //var dataRow = table.DataTable().row(i).data();
-      //$.ajax({url:"Recette_Ingredient_Get_Stock.php",method:"POST",data:{ID_INGREDIENT:ID_INGREDIENT,TYPE:TYPE},
-      //  success:function(dataStock){if (table.find("tr:eq("+(i+1)+")").find("td:eq(3)").html()>dataStock[0]){table.find("tr:eq("+i+")").find("td:eq(3)").style.color="red"}}});
-    }
-
-  });
-
 });
 
- function calc_quantites_ingredients(volume_empatage)
- {
-  
-
-  //pour chaque ligne du tableau ingredients
-  for (var i=0; i<rowLength; i+=1)
-  {
-    //calculer les quantités
-    var percent = table.rows[i].cells[2].innerHTML;
-    var quantite = masse_tot*percent/100 ;
-
-    //écriture
-    table.find("tr:eq("+(i+1)+")").find("td:eq(3)").html(quantite); 
-      
-    //var ID_INGREDIENT=dataRow[1]; 
-    //var TYPE=dataRow[0]; 
-    
-    //color case si pas assez de stock
-    //var dataRow = table.DataTable().row(i).data();
-    //$.ajax({url:"Recette_Ingredient_Get_Stock.php",method:"POST",data:{ID_INGREDIENT:ID_INGREDIENT,TYPE:TYPE},
-    //  success:function(dataStock){if (table.find("tr:eq("+(i+1)+")").find("td:eq(3)").html()>dataStock[0]){table.find("tr:eq("+i+")").find("td:eq(3)").style.color="red"}}});
-  }
-  return;
- } 
-
+//VENTES: CALCUL PRIX
+$("#id_quantite").on("keyup", function() {
+    var quantite = $(this).val();
+    $('#id_prix').val(quantite*5);
+});
 
 //UPDATE °P / SG FORM
-function calc_SG(str,input_name) 
+function calc_SG(str,input_name)
 {
   var id_input_to_update = input_name.substring(0,input_name.length-2);
-  if (str.length > 0 && !isNaN(str)) 
+  if (str.length > 0 && !isNaN(str))
     console.log('\"#' + id_input_to_update + '\"');
-  { 
+  {
     $('#' + id_input_to_update).val(Math.round(conversion_P_D(str)*1000)/1000);
     return;
-  } 
+  }
 }
 
 function conversion_P_D(P)
 {
   var D = 1+P/(258.6-0.88*P);
   return D ;
+}
+
+function conversion_D_P(D)
+{
+  var d = parseFloat(D);
+  var P = -616.868 + 1111.14*D - 630.272*Math.pow(d,2.0) + 135.997*Math.pow(d,3.0);
+  return P ;
+}
+
+//DIFFERENCE 2 DATES
+function diff_date(date1, date2)
+{
+  //Get 1 day in milliseconds
+  var one_day=1000*60*60*24;
+
+  // Convert both dates to milliseconds
+  var date1_ms = new Date(date1).getTime();
+  var date2_ms = new Date(date2).getTime();
+
+  // Calculate the difference in milliseconds
+  var difference_ms = date2_ms - date1_ms;
+
+  // Convert back to days and return
+  return Math.round(difference_ms/one_day);
 }

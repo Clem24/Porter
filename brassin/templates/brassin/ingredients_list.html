@@ -19,8 +19,8 @@
 
 <div class="row ">
 
-  <!--- MALTS ---------------------------------------------------------------------------> 
-  <div class="col-sm-4">  
+  <!--- MALTS --------------------------------------------------------------------------->
+  <div class="col-sm-4">
 
     <h4>Malts</h4>
 
@@ -35,11 +35,19 @@
         </thead>
         <tbody>
           {% for ingredient in malt %}
-          <tr>
+          <tr data-toggle="collapse" data-target="#dataMalt{{ingredient.id}}" class="clickable">
             <td>{{ ingredient.variete }}</td>
-            <td>{{ ingredient.stock|floatformat}} kg</td>
+            <td>{% if ingredient.stock < 1 %}{% widthratio ingredient.stock 1 1000 %} g{% else %}{{ ingredient.stock|floatformat }} kg{% endif %}</td>
             <td><a class="btn btn-outline-dark btn-sm" href="{% url 'ingredient_update' ingredient.id %}"><i class="fas fa-edit"></i></a></td>
             <td><a class="btn btn-outline-danger btn-sm" href="{% url 'ingredient_delete' ingredient.id %}"><i class="fas fa-times"></i></a></td>
+          </tr>
+          <tr>
+            <td colspan="4" style="border-top:none !important;">
+                <div id="dataMalt{{ingredient.id}}" class="collapse">
+                    {{ingredient.propriete}}
+                    {% if ingredient.description %}{{ingredient.description|linebreaksbr}}{% endif %}
+                </div>
+            </td>
           </tr>
           {% empty %}
             <tr>
@@ -51,8 +59,8 @@
 
   </div>
 
-  <!--- HOUBLONS ---------------------------------------------------------------------------> 
-  <div class="col-sm-4">  
+  <!--- HOUBLONS --------------------------------------------------------------------------->
+  <div class="col-sm-4">
 
     <h4>Houblons</h4>
 
@@ -67,12 +75,22 @@
         </thead>
         <tbody>
           {% for ingredient in houblon %}
-          <tr>
+          <tr data-toggle="collapse" data-target="#dataHoublon{{ingredient.id}}" class="clickable">
             <td>{{ ingredient.variete }}</td>
-            <td>{{ ingredient.stock|floatformat}} kg</td>
+            <td>{% if ingredient.stock < 1 %}{% widthratio ingredient.stock 1 1000 %} g{% else %}{{ ingredient.stock|floatformat }} kg{% endif %}</td>
             <td><a class="btn btn-outline-dark btn-sm" href="{% url 'ingredient_update' ingredient.id %}"><i class="fas fa-edit"></i></a></td>
             <td><a class="btn btn-outline-danger btn-sm" href="{% url 'ingredient_delete' ingredient.id %}"><i class="fas fa-times"></i></a></td>
           </tr>
+          <tr>
+            <td colspan="4" style="border-top:none !important;">
+                <div id="dataHoublon{{ingredient.id}}" class="collapse">
+                    {{ingredient.propriete}}
+
+                    {% if ingredient.description %}{{ingredient.description|linebreaksbr}}{% endif %}
+                </div>
+            </td>
+          </tr>
+
           {% empty %}
             <tr>
               <td colspan="7" class="text-center bg-warning">Pas encore d'ingredient.</td>
@@ -83,8 +101,8 @@
 
   </div>
 
-  <!--- AUTRES ---------------------------------------------------------------------------> 
-  <div class="col-sm-4">  
+  <!--- AUTRES --------------------------------------------------------------------------->
+  <div class="col-sm-4">
 
     <h4>Autre</h4>
 
@@ -101,7 +119,7 @@
           {% for ingredient in autre %}
           <tr>
             <td>{{ ingredient.variete }}</td>
-            <td>{{ ingredient.stock|floatformat}} kg</td>
+            <td>{% if ingredient.stock < 1 %}{% widthratio ingredient.stock 1 1000 %} g{% else %}{{ ingredient.stock|floatformat }} kg{% endif %}</td>
             <td><a class="btn btn-outline-dark btn-sm" href="{% url 'ingredient_update' ingredient.id %}"><i class="fas fa-edit"></i></a></td>
             <td><a class="btn btn-outline-danger btn-sm" href="{% url 'ingredient_delete' ingredient.id %}"><i class="fas fa-times"></i></a></td>
           </tr>
@@ -111,12 +129,12 @@
             </tr>
           {% endfor %}
         </tbody>
-      </table> 
+      </table>
 
   </div>
 
 </div>
- 
+
 {% endblock %}
 
 {% block javascript %}

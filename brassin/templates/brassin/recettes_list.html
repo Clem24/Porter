@@ -19,19 +19,16 @@
 
   {# TABLEAU RECETTES #}
   <div class="md-form mt-0">
-    <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Recette-table-fil">
+    <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Recette-table-filter">
   </div>
   <br/>
 
   <table class="table" id="Recette-table">
     <thead class="thead-light">
       <tr>
-        <th>#</th>
         <th>Nom</th>
         <th>Type</th>
         <th>Nombre</th>
-
-        <th></th>
         <th></th>
         <th></th>
       </tr>
@@ -39,12 +36,9 @@
     <tbody>
       {% for recette in recettes %}
       <tr>
-        <td>{{ recette.id }}</td>
-        <td>{{ recette.nom }}</td>
+        <td><a class="btn btn-outline-dark btn-sm" href="{% url 'recette_consult' recette.id %}">{{ recette.nom }}</a></td>
         <td>{{ recette.type_biere }}</td>
         <td>{{ recette.nombre_brassin }}</td>
-
-        <td><a class="btn btn-outline-dark btn-sm" href="{% url 'recette_consult' recette.id %}"><i class="fas fa-eye"></i></a></td>
         <td><a class="btn btn-outline-dark btn-sm" href="{% url 'recette_update' recette.id %}"><i class="fas fa-edit"></i></a></td>
         <td><a class="btn btn-outline-danger btn-sm" href="{% url 'recette_delete' recette.id %}"><i class="fas fa-times"></i></a></td>
       </tr>
@@ -55,9 +49,48 @@
       {% endfor %}
     </tbody>
   </table>
- 
+
 {% endblock %}
 
 {% block javascript %}
   <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+  <script>
+  //CALCULS RECETTE
+  $("#volume_empatage_desire").on("keyup", function() {
+    var v_empatage = $(this).val();
+    var table=$("#table_ing_recette");
+    var rowLength = $("#table_ing_recette tr").length;
+    var taux_empatage =$("#taux_empatage").val();
+    var masse_tot = taux_empatage*v_empatage
+    var quantite_tot_malt =0
+    //pour chaque ligne du tableau ingredients
+    for (var i=1; i<rowLength; i+=1)
+    {
+      //calculer les quantités
+      var stock =parseFloat($('table tr:nth-child('+i+') td:nth-child(7)').text())
+      var ing =$('table tr:nth-child('+i+') td:nth-child(1)').text()
+      if (ing=="Malt"){
+        var percent = $('table tr:nth-child('+i+') td:nth-child(3)').text();
+        var quantite = masse_tot*parseFloat(percent)/100 ;
+        $('table tr:nth-child('+i+') td:nth-child(5)').text(quantite.toFixed(2) + " kg");
+      }
+      else if (ing=="Levure"){
+        $('table tr:nth-child('+i+') td:nth-child(5)').text("");
+      }
+      else {
+        var c = $('table tr:nth-child('+i+') td:nth-child(3)').text();
+        var quantite = v_empatage*c/1000 ;
+        if (quantite > 1){$('table tr:nth-child('+i+') td:nth-child(5)').text(quantite.toFixed(2) + " kg");}
+        else {quantite_g=quantite*1000;$('table tr:nth-child('+i+') td:nth-child(5)').text(quantite_g.toFixed(2) + " g");}
+      }
+
+      //alert stock
+      if (quantite>stock){$('table tr:nth-child('+i+') td:nth-child(5)').css({'color':'red'});}
+      else {$('table tr:nth-child('+i+') td:nth-child(5)').css({'color':'black'});}
+
+    }
+    $("#volume_rincage_dreches").val(10+masse_tot)
+  });
+
+  </script>
 {% endblock %}

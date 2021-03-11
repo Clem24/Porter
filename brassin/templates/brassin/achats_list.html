@@ -11,6 +11,7 @@
 <div class="jumbotron jumbotron-fluid">
   <div class="container">
     <h1 class="page-header">Achats</h1>
+    <h4>TOTAL: {{ total_achats |floatformat}} €</h4>
   </div>
 </div>
 
@@ -35,7 +36,7 @@
     </tr>
   </thead>
   <tbody>
-    {% for achat in achats %}
+    {% for achat in fonctionnement %}
     <tr>
       <td>{{ achat.date_achat }}</td>
       <td>{{ achat.ingredient }}</td>
@@ -51,7 +52,7 @@
     {% endfor %}
   </tbody>
 </table>
- 
+
 {% endblock %}
 
 {% block javascript %}

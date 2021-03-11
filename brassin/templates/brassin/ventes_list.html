@@ -11,6 +11,7 @@
 <div class="jumbotron jumbotron-fluid">
   <div class="container">
     <h1 class="page-header">Ventes</h1>
+    <h4>TOTAL: {{ total_recettes|floatformat }} € ({{ total_bouteilles_vendues|floatformat }} bouteilles)</h4>
   </div>
 </div>
 
@@ -31,6 +32,8 @@
       <th>Bouteilles</th>
       <th>Prix</th>
       <th>Client</th>
+      <th>Par</th>
+      <th>Virement</th>
       <th></th>
       <th></th>
     </tr>
@@ -39,11 +42,13 @@
     {% for vente in ventes %}
     <tr>
       <td>{{ vente.date_vente }}</td>
-      <td><a href="{% url 'brassin_consult' vente.brassin %}">{{ vente.brassin }}</a></td>
+      <td><a href="{% url 'brassin_consult' vente.brassin.id %}">{{ vente.brassin }}</a></td>
       <td>{{ vente.quantite|floatformat}}</td>
       <td>{{ vente.prix|floatformat }} €</td>
       <td>{{ vente.client }}</td>
-      <td><a class="btn btn-outline-dark btn-sm" href="{% url 'vente_update' vente.id %}"><i class="fas fa-edit"></i></a></td>
+      <td>{{ vente.vendeur }}</td>
+      <td style="text-align: center;vertical-align: middle;">{% if vente.virement %}<i class="far fa-check-circle" style="color:#28a745"></i>{% else %}<i class="far fa-times-circle" style="color:#dc3545"></i>{% endif %}</td>
+      <td><a id="edit_button" class="btn btn-outline-dark btn-sm" href="{% url 'vente_update' vente.id %}"><i class="fas fa-edit"></i></a></td>
       <td><a class="btn btn-outline-danger btn-sm" href="{% url 'vente_delete' vente.id %}"><i class="fas fa-times"></i></a></td>
     </tr>
     {% empty %}
@@ -54,9 +59,10 @@
   </tbody>
 </table>
 
-
 {% endblock %}
 
 {% block javascript %}
+
   <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+
 {% endblock %}

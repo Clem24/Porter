@@ -1,7 +1,12 @@
 {% extends 'base.html' %}
 {% load static %}
+
+{% block css %}
+<link rel="stylesheet" href="{% static 'brassin/css/style.css' %}" />
+{% endblock %}
+
 {% block content %}
-{{ form.media }} 
+{{ form.media }}
 {% load crispy_forms_tags %}
 
 <div class="jumbotron jumbotron-fluid">
@@ -14,7 +19,7 @@
 </div>
 
 <div class="card h-100">
-      
+
     <div class="card-body">
 
         <form action="" method="POST">
@@ -32,29 +37,44 @@
                 <div class="col-4">
                     {{ form.temps_infusion|as_crispy_field }}
                 </div>
-                <div class="col-4">
-                    {{ form.achete|as_crispy_field }}
-                </div>
-            </div>
+             </div>
+
+            {{ form.achete|as_crispy_field }}
+
 
             <button type="submit" class="btn btn-info">Ajouter</button>
+            <a class="btn btn-success float-right" href="{% url 'brassin_consult' form.brassin.value %}">OK</i></a>
         </form>
 
         <br/>
         {% if messages %}
             {% for message in messages %}
-            <div class="alert alert-success {{ message.tags }}" role="alert">
+            <div class="alert alert-success alert-dismissible {{ message.tags }}" role="alert">
             {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
             </div>
             {% endfor %}
         {% endif %}
 
     </div>
-    
+
 </div>
 
 {% endblock %}
 
 {% block javascript %}
   <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+  <script>
+    //INGREDIENT ADD FORM (BRASSIN / RECETTE)
+    $("#id_ingredient").on('change', function() {
+        var ing = $(this);
+        $('#div_id_temps_infusion').hide();
+        $('#id_quantite').attr("placeholder", "kg");
+
+        var text = $("option:selected",ing).text();
+        if (text.match(/Levure.*/)) {$('#id_quantite').attr("placeholder", "paquets");}
+        if (text.match(/Houblon.*/)){$('#div_id_temps_infusion').show();}
+        if (text.match(/Malt.*/)){$('#div_id_temps_infusion').show();}
+   });
+  </script>
 {% endblock %}

@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% block content %}
-{{ form.media }} 
+{{ form.media }}
 {% load crispy_forms_tags %}
 
 <div class="jumbotron jumbotron-fluid">
@@ -17,14 +17,10 @@
 
     <form action="" method="post">
       {% csrf_token %}
-
-      {{ form.date_vente|as_crispy_field }}
-      {{ form.brassin|as_crispy_field }}
-      {{ form.quantite|as_crispy_field }}
-      {{ form.client|as_crispy_field }}
+      {{ form|crispy }}
 
       <button type="submit" class="btn btn-info">Editer</button>
-    
+
     </form>
 
   </div>
