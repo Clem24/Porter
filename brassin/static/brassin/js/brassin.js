@@ -1,5 +1,7 @@
 $(document).ready(function(){
 
+    $.fn.dataTable.moment('DD/MM/YYYY');
+
     //ADD INGREDIENT
     var type_ing = $("#id_type_ingredient").val();
     $('#title-ingredient-information-form').hide();
@@ -17,44 +19,6 @@ $(document).ready(function(){
     if (type_ing == 'houblon'){$('#div_id_acide_alpha').show();}
     if (type_ing == 'autre'){$('#title-ingredient-information-form').hide();}
 
-  //FILTER ON BRASSIN TABLE
-  $("#Brassin-table-filter").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    $("#Brassin-table tr").filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-    });
-  });
-
-  //FILTER ON INGREDIENT TABLE
-  $("#Ingredient-table-filter").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    $("#Ingredient-table tr").filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-    });
-  });
-
-  //FILTER ON ACHAT TABLE
-  $("#Achat-table-filter").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    $("#Achat-table tr").filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-    });
-  });
-
-    //FILTER ON VENTE TABLE
-  $("#Vente-table-filter").on("keyup", function() {
-    var value = $(this).val().toLowerCase();
-    $("#Vente-table tr").filter(function() {
-      $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
-    });
-  });
-
-});
-
-//VENTES: CALCUL PRIX
-$("#id_quantite").on("keyup", function() {
-    var quantite = $(this).val();
-    $('#id_prix').val(quantite*5);
 });
 
 //UPDATE °P / SG FORM

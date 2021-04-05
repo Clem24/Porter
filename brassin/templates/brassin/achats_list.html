@@ -19,10 +19,6 @@
 <br/><br/>
 
 {# TABLEAU INGREDIENTS #}
-<div class="md-form mt-0">
-  <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Achat-table-filter">
-</div>
-<br/>
 
 <table class="table" id="Achat-table">
   <thead class="thead-light">
@@ -57,4 +53,14 @@
 
 {% block javascript %}
   <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+  <script>
+  $('#Achat-table').DataTable({
+        "info" : false,
+        "order": [[ 0, "desc" ]],
+        "language": {"url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"},
+        "columnDefs": [
+            { "orderable": false, "targets": [4,5] }
+        ]
+  });
+  </script>
 {% endblock %}

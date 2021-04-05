@@ -12,7 +12,7 @@
 <div class="jumbotron jumbotron-fluid">
     <div class="container">
       	<h1>Brassin</h1>
-      	<h4>Brassin {{ brassin.id }}
+      	<h4>Brassin {{ brassin.numero }}
 			<a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_update' brassin.id %}"><i class="fas fa-edit"></i></a>
 			<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'brassin_list' %}"><i class="fas fa-backspace"></i></a>
 		</h4>
@@ -20,14 +20,30 @@
     </div>
 </div>
 
+
 <div class="row ">
-	<div class="col-sm-5">
-		<!--- PROFIL --------------------------------------------------------------------------->
+	<div class="col-sm-12">
+	    <!--- NOTES --------------------------------------------------------------------------->
 		<div class="card h-100">
-		  <h4 class="card-header">PROFIL</h4>
+		  <h5 class="card-header">NOTES</h5>
 
 		  <div class="card-body">
-		  	{% if brassin.recette %}<h4><a href="{% url 'recette_consult' brassin.recette.id %}">{{ brassin.recette }}</a></h4><br/>{% endif %}
+            {{ brassin.notes|linebreaksbr }}
+		  </div>
+		</div>
+	</div>
+</div>
+
+<br/>
+
+<div class="row ">
+	<div class="col-sm-6">
+		<!--- PROFIL --------------------------------------------------------------------------->
+		<div class="card h-100">
+		  <h5 class="card-header">PROFIL</h5>
+
+		  <div class="card-body">
+		  	{% if brassin.recette %}<h5><a href="{% url 'recette_consult' brassin.recette.id %}">{{ brassin.recette }}</a></h5><br/>{% endif %}
             <p>Calories/L: {{ brassin.calories|floatformat }}</p>
 
 			<div class="row ">
@@ -37,29 +53,37 @@
 		</div>
 	</div>
 
-	<div class="col-sm-4">
+	<div class="col-sm-6">
 		<div class="card h-100">
-		  <h4 class="card-header">MISE EN BOUTEILLE</h4>
+		  <h5 class="card-header">STOCK</h5>
 
 		  <div class="card-body">
 			Date : {{ brassin.date_mise_bouteille }}<br/>
 			Resucrage: {{brassin.resucrage}} g/L <a href="{% url 'outils' brassin.id %}">(calc sucre)</a><br/>
-			Bouteilles : {{ brassin.nombre_bouteilles }} (vendues: <a href="{% url 'ventes_list' %}">{{ brassin.bouteilles_vendues }}</a>)<br/>
 			Prix/L : {{ brassin.cout_brassin|floatformat:2}} €/L<br/><br/>
+
+			<table class="table table-hover">
+			    <thead>
+				    <tr><th>Quantité</th><th>Type</th><th>Vendus</th><th><a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_produit_add' brassin.id %}"><i class="fas fa-plus"></i></a></th></tr>
+				</thead>
+				<tbody>
+					{% for p in brassin_produit.all %}
+					<tr>
+					    <td>{{ p.quantite|floatformat }}</td>
+					    <td>{{ p.produit }}</td>
+					    <td><a  href="{% url 'vente_create' bp=p.id %}">{{ p.vendu }}</a></td>
+    					<td><a class="btn btn-outline-danger btn-sm" href="{% url 'brassin_produit_delete' b=brassin.id pk=p.id %}"><i class="fas fa-times"></i></a></td>
+					</tr>
+					{% empty %}
+				    <tr>
+				        <td colspan="4" class="text-center bg-warning">Pas encore de produit.</td>
+				    </tr>
+					{% endfor %}
+				</tbody>
+			</table>
 		  </div>
 		</div>
 	</div>
-
-	<div class="col-sm-3">
-		<div class="card h-100">
-		  <h4 class="card-header">NOTES</h4>
-
-		  <div class="card-body">
-            {{ brassin.notes|linebreaksbr }}
-		  </div>
-		</div>
-	</div>
-
 </div>
 
 <br/>
@@ -69,9 +93,32 @@
 	<!--- PRODUCTION --------------------------------------------------------------------------->
 	<div class="col-sm-6">
 		<div class="card h-100">
-		  <h4 class="card-header">PRODUCTION</h4>
+		  <h5 class="card-header">BRASSAGE</h5>
 
 		  <div class="card-body">
+
+		    Profil chauffe:
+			<br/><br/>
+
+			<table class="table table-hover table-responsive">
+				<thead>
+				    <tr><th>Etape</th><th>Temperature</th><th>Durée</th><th><a class="btn btn-outline-dark btn-sm" href="{% url 'brassin_etape_chauffe_add' brassin.id %}"><i class="fas fa-plus"></i></a></th></tr>
+				</thead>
+				<tbody>
+				    {% for c in etape_chauffe %}
+					<tr>
+					    <td>{{ c.numero }}</td>
+					    <td>{{ c.temperature }} °C</a></td>
+					    <td>{{c.temps_etape}}</td>
+					    <td><a class="btn btn-outline-danger btn-sm" href="{% url 'brassin_etape_chauffe_delete' b=brassin.id pk=c.id %}"><i class="fas fa-times"></i></a></td>
+					</tr>
+					{% empty %}
+				    <tr><td colspan="4" class="text-center bg-warning">Pas d'étape de chauffe renseignée.</td></tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+            <br/>
 
 			<table class="table table-hover table-responsive">
 				<thead>
@@ -88,7 +135,9 @@
 
 			Starter: {{brassin.volume_starter}} L<br/>
 			Rincage des dreches: {{brassin.volume_rincage_dreches}} L<br/>
-			Temperature : {{brassin.temperature_brassage}} °C<br/><br/>
+
+			<br/>
+
 			<div class="row ">
                 <div id="Attenuation_gauge" class="col-sm-4"></div><div id="Rendement_gauge" class="col-sm-4"></div><div class="col-sm-4"></div>
             </div>
@@ -101,13 +150,13 @@
 	<!--- INGREDIENTS --------------------------------------------------------------------------->
 	<div class="col-sm-6">
 		<div class="card h-100">
-		  <h4 class="card-header">INGREDIENTS<a class="btn btn-outline-dark btn-sm float-right" href="{% url 'brassin_ingredient_add' brassin.id %}"><i class="fas fa-plus"></i></a></h4>
+		  <h5 class="card-header">INGREDIENTS</h5>
 
 		  <div class="card-body">
 
 			<table class="table table-hover">
 				<thead>
-				    <tr><th>Type</th><th>Variété</th><th>Quantité</th><th></th></tr>
+				    <tr><th>Type</th><th>Variété</th><th>Quantité</th><th><a class="btn btn-outline-dark btn-sm float-right" href="{% url 'brassin_ingredient_add' brassin.id %}"><i class="fas fa-plus"></i></a></th></tr>
 				</thead>
 				<tbody>
 					{% for ingredient in brassin_ingredient.all %}
@@ -116,7 +165,7 @@
 					    <td><a data-toggle="tooltip" title="{{ ingredient.ingredient.propriete }}">{{ ingredient.ingredient.type_ingredient }}</a></td>
     					<td><a data-toggle="tooltip" title="{{ ingredient.ingredient.propriete }}">{{ ingredient.ingredient.variete }}</a></td>
     					<td> {% if ingredient.quantite < 1 %}{% widthratio ingredient.quantite 1 1000 %} g{% else %}{{ ingredient.quantite|floatformat }} kg{% endif %}</td>
-    					<td><a class="btn btn-outline-danger btn-sm" href="{{ request.get_full_path }}delete-ingredient-{{ingredient.id}}"><i class="fas fa-times"></i></a></td>
+    					<td><a class="btn btn-outline-danger btn-sm" href="{% url 'brassin_ingredient_delete' b=brassin.id pk=ingredient.id %}"><i class="fas fa-times"></i></a></td>
 					</tr>
 					{% empty %}
 				    <tr>

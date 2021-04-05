@@ -4,8 +4,59 @@ from decimal import *
 from math import exp, expm1
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
-class ingredient(models.Model):
+class Profile(models.Model):
+	user = models.OneToOneField(User, on_delete=models.CASCADE)
+	brasserie = models.CharField(max_length=100)
+	logo = models.ImageField(upload_to ='logos',blank=True,null=True)
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    instance.profile.save()
+
+class Fermenteur(models.Model):
+    numero = models.CharField(blank=True,null=True,max_length=30)
+    volume = models.DecimalField(max_digits=5, decimal_places=1)
+    marque = models.CharField(null=True,blank=True,max_length=30)
+    notes = models.TextField(blank=True,null=True)
+
+    def __str__(self):
+        if self.dispo:
+            return "Cuve " + str(self.volume) + "L - (" + str(self.marque) + ")"
+        else:
+            return "Cuve " + str(self.volume) + "L - (" + str(self.marque) + ") /!\ PLEIN: " + str(self.filled_with)
+
+    @property
+    def filled_with(self):
+        brassin_f = Brassin.objects.filter(fermenteur=self.id,date_mise_bouteille__isnull=True,archive=False).first()
+        if brassin_f is None:
+            return "Vide"
+        else:
+            return str(brassin_f)
+
+    @property
+    def dispo(self):
+        if self.filled_with == "Vide":
+            return True
+        return False
+
+class Produit(models.Model):
+    PRODUIT_TYPE = [('Bouteille','Bouteille'),('Canette','Canette'),('Fut','Fut'),('Autre','Autre')]
+    type_produit = models.CharField(null=True,max_length=30,choices=PRODUIT_TYPE,default='Bouteille')
+    contenance = models.DecimalField(max_digits=6, decimal_places=2)
+    prix = models.DecimalField(null=True, blank= True,max_digits=6,decimal_places=2)
+
+    def __str__(self):
+        return str(self.type_produit) + " (" + str(self.contenance) + " L)"
+
+class Ingredient(models.Model):
 	INGREDIENT_TYPE = [('Malt','Malt'),('Houblon','Houblon'),('Levure','Levure'),('Autre','Autre'),]
 	type_ingredient = models.CharField(null=True,max_length=30,choices=INGREDIENT_TYPE,default='Autre')
 	variete = models.CharField(max_length=30)
@@ -19,8 +70,8 @@ class ingredient(models.Model):
 
 	@property
 	def stock(self):
-		achat_sum = achat.objects.filter(ingredient=self.id).aggregate(Sum('quantite')).get('quantite__sum',0.00) if achat else 0.00
-		brassin_sum = brassin_ingredient.objects.filter(ingredient=self.id).aggregate(Sum('quantite')).get('quantite__sum',0.00) if brassin_ingredient else 0.00
+		achat_sum = Achat.objects.filter(ingredient=self.id).aggregate(Sum('quantite')).get('quantite__sum',0.00) if Achat else 0.00
+		brassin_sum = BrassinIngredient.objects.filter(ingredient=self.id).aggregate(Sum('quantite')).get('quantite__sum',0.00) if BrassinIngredient else 0.00
 		if not achat_sum:
 			return brassin_sum
 		if not brassin_sum:
@@ -64,17 +115,18 @@ class ingredient(models.Model):
 	def __str__(self):
 		return self.type_ingredient + " - " + self.variete
 
-class recette(models.Model):
+class Recette(models.Model):
 	nom = models.CharField(max_length=30)
 	type_biere = models.CharField(blank=True,null=True,max_length=30)
 	densite_desire = models.DecimalField(blank=True,null=True, max_digits=4, decimal_places=3)
 	taux_empatage =  models.DecimalField(max_digits=4, decimal_places=3,default=0.3)
 	resucrage = models.DecimalField(blank=True,null=True, max_digits=3, decimal_places=1,default=7)
 	notes = models.TextField(blank=True,null=True)
+	etiquette = models.ImageField(upload_to = 'recettes',blank=True,null=True)
 
 	@property
 	def nombre_brassin(self):
-		return brassin.objects.filter(recette=self.id).count()
+		return Brassin.objects.filter(recette=self.id).count()
 
 	class Meta:
 		verbose_name = "Recette"
@@ -83,7 +135,7 @@ class recette(models.Model):
 	def __str__(self):
 		return self.nom
 
-class note(models.Model):
+class Note(models.Model):
     date = models.DateField(null=True)
     titre = models.CharField(null=True, blank= True,max_length=30)
     texte = models.TextField(blank=False,null=False)
@@ -93,8 +145,9 @@ class note(models.Model):
         verbose_name = "Notes"
         ordering = ['-date']
 
-class brassin(models.Model):
+class Brassin(models.Model):
 	date_brassin = models.DateField(null=True)
+	numero = models.CharField(blank=True,null=True,max_length=30)
 	date_mise_bouteille = models.DateField(blank=True,null=True)
 	densite_avant_ebullition = models.DecimalField(blank=True,null=True, max_digits=4, decimal_places=3)
 	densite_initiale = models.DecimalField(blank=True,null=True, max_digits=4, decimal_places=3)
@@ -104,15 +157,17 @@ class brassin(models.Model):
 	volume_mout = models.DecimalField(blank=True,null=True, max_digits=5, decimal_places=1)
 	volume_cuve_fermentation = models.DecimalField(blank=True,null=True, max_digits=5, decimal_places=1)
 	volume_starter = models.DecimalField(blank=True,null=True, max_digits=5, decimal_places=1,default=0)
-	nombre_bouteilles = models.IntegerField(blank=True,null=True)
 	temps_empatage = models.TimeField(blank=True,null=True,default="01:15:00")
 	temps_ebullition = models.TimeField(blank=True,null=True,default="01:30:00")
 	temps_fermentation = models.TimeField(blank=True,null=True)
 	notes = models.TextField(blank=True,null=True)
-	ingredient = models.ManyToManyField(ingredient, through='brassin_ingredient',null=True,blank=True)
-	recette = models.ForeignKey(recette, on_delete=models.SET_NULL, null=True,blank=True)
-	temperature_brassage = models.DecimalField(blank=True,null=True, max_digits=3, decimal_places=1)
 	resucrage = models.DecimalField(blank=True,null=True, max_digits=2, decimal_places=1)
+
+	ingredient = models.ManyToManyField(Ingredient, through='BrassinIngredient',null=True,blank=True)
+	recette = models.ForeignKey(Recette, on_delete=models.SET_NULL, null=True,blank=True)
+	fermenteur = models.ForeignKey(Fermenteur, on_delete=models.SET_NULL, null=True,blank=True)
+
+	archive = models.BooleanField(default=False)
 
 	class Meta:
 		verbose_name = "Brassin"
@@ -120,8 +175,8 @@ class brassin(models.Model):
 
 	def __str__(self):
 	    if not self.recette:
-	        return "Sans recette (" + str(self.date_brassin) + ")"
-	    return str(self.recette.nom) + " (" + str(self.date_brassin) + ")"
+	        return str(self.numero) + ": Sans recette (" + str(self.date_brassin) + ")"
+	    return str(self.numero) + ": " + str(self.recette.nom) + " (" + str(self.date_brassin) + ")"
 
 	@property
 	def densite_initialeP(self):
@@ -145,11 +200,11 @@ class brassin(models.Model):
 
 	@property
 	def malt_kg_total(self):
-		return brassin_ingredient.objects.filter(brassin=self.id).filter(ingredient__type_ingredient="Malt").aggregate(Sum('quantite')).get('quantite__sum',0.00) if brassin_ingredient else 0
+		return BrassinIngredient.objects.filter(brassin=self.id).filter(ingredient__type_ingredient="Malt").aggregate(Sum('quantite')).get('quantite__sum',0.00) if brassin_ingredient else 0
 
 	@property
 	def cout_brassin(self):
-		ings_achetes=brassin_ingredient.objects.filter(brassin=self.id).filter(achete=True)
+		ings_achetes=BrassinIngredient.objects.filter(brassin=self.id).filter(achete=True)
 		cout_brassin=0
 		if ings_achetes.exists():
 			for ing in ings_achetes:
@@ -183,13 +238,8 @@ class brassin(models.Model):
 		return (self.densite_initiale-self.densite_finale)*Decimal(133.333)
 
 	@property
-	def bouteilles_vendues(self):
-		ventes_sum = vente.objects.filter(brassin=self.id).aggregate(Sum('quantite')).get('quantite__sum',0.00) if achat else 0.00
-		return ventes_sum
-
-	@property
 	def IBU(self):
-		Houblons_brassin=brassin_ingredient.objects.filter(brassin=self).filter(ingredient__type_ingredient="Houblon")
+		Houblons_brassin=BrassinIngredient.objects.filter(brassin=self).filter(ingredient__type_ingredient="Houblon")
 		IBU=0
 		utilisation=0
 		cdensite=0
@@ -209,32 +259,63 @@ class brassin(models.Model):
 
 	@property
 	def EBC(self):
-		Malts_brassin =brassin_ingredient.objects.filter(brassin=self.id).filter(ingredient__type_ingredient="Malt")
+		Malts_brassin = BrassinIngredient.objects.filter(brassin=self.id).filter(ingredient__type_ingredient="Malt")
 		MCU =0
 		if Malts_brassin.exists() and self.volume_mout and self.volume_mout != 0:
 			    for malt in Malts_brassin:
 				    MCU += Decimal(4.23)*malt.quantite*malt.ingredient.ebc/self.volume_mout
 		return Decimal(2.939)*MCU**Decimal(0.6859)
 
+class BrassinEtapeChauffe(models.Model):
+    numero = models.PositiveIntegerField(default=1)
+    temps_etape = models.TimeField(default="00:00:00")
+    temperature = models.DecimalField(max_digits=3, decimal_places=1)
+    brassin = models.ForeignKey(Brassin, on_delete=models.CASCADE)
 
-class brassin_ingredient(models.Model):
-	brassin = models.ForeignKey(brassin, on_delete=models.CASCADE)
-	ingredient = models.ForeignKey(ingredient, on_delete=models.CASCADE)
+class BrassinProduit(models.Model):
+	brassin = models.ForeignKey(Brassin, on_delete=models.CASCADE)
+	produit = models.ForeignKey(Produit, on_delete=models.PROTECT)
+	quantite = models.PositiveIntegerField()
+
+	class Meta:
+	    verbose_name = "Produits disponibles"
+	    ordering = ['-brassin__date_brassin']
+
+	def __str__(self):
+	    return "Brassin n°" + str(self.brassin) + " ----------------------- " + str(self.produit) + " ----------------------- (reste " + str(self.restant) + ")"
+
+	@property
+	def vendu(self):
+		vendu = Vente.objects.filter(brassin_produit=self.id).aggregate(Sum('quantite')).get('quantite__sum',0.00)
+		if vendu is None:
+		    return 0.00
+		else:
+		    return vendu
+
+	@property
+	def restant(self):
+	    restant = Decimal(self.quantite) - Decimal(self.vendu)
+	    return restant
+
+class BrassinIngredient(models.Model):
+	brassin = models.ForeignKey(Brassin, on_delete=models.CASCADE)
+	ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
 	quantite = models.DecimalField(null=True,max_digits=8,decimal_places=4)
 	temps_infusion = models.TimeField(blank=True,null=True,default="01:30:00")
 	achete = models.BooleanField(default=True)
 
-class recette_ingredient(models.Model):
-	recette = models.ForeignKey(recette, on_delete=models.CASCADE)
-	ingredient = models.ForeignKey(ingredient, on_delete=models.CASCADE)
+class RecetteIngredient(models.Model):
+	recette = models.ForeignKey(Recette, on_delete=models.CASCADE)
+	ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
 	quantite = models.DecimalField(null=True,max_digits=8,decimal_places=4)
 	temps_infusion = models.TimeField(blank=True,null=True,default="01:30:00")
 
-class achat(models.Model):
+
+class Achat(models.Model):
     ACHAT_TYPE = [('Fonctionnement','Fonctionnement'),('MAJ','MAJ'),]
     type_achat = models.CharField(null=True,max_length=30,choices=ACHAT_TYPE,default='Fonctionnement')
     date_achat = models.DateField(null=True)
-    ingredient = models.ForeignKey(ingredient, on_delete=models.SET_NULL,null=True)
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.SET_NULL,null=True)
     quantite = models.DecimalField(null=True,max_digits=6,decimal_places=3)
 
     class Meta:
@@ -252,28 +333,21 @@ class achat(models.Model):
     @property
     def total(self):
         total = 0
-        achats = achat.objects.all()
+        achats = Achat.objects.all()
         for a in achats:
             ing = a.ingredient
             total += ing.prix_kg*a.quantite
         return total
 
-    @property
-    def unite(self):
-        if self.type_ingredient=="Malt":
-            return "%"
-        else:
-            return "g/L"
-
-
-class vente(models.Model):
+class Vente(models.Model):
 	date_vente = models.DateField(default=datetime.now,null=True)
-	brassin = models.ForeignKey(brassin, on_delete=models.SET_NULL,null=True)
+	brassin_produit = models.ForeignKey(BrassinProduit, on_delete=models.CASCADE)
 	quantite = models.PositiveIntegerField()
 	client = models.CharField(null=True, blank= True,max_length=30)
 	vendeur = models.CharField(null=True, blank= True,max_length=30)
-	prix = models.DecimalField(null=True, blank= True,max_digits=6,decimal_places=2)
+	prix = models.DecimalField(max_digits=6,decimal_places=2)
 	virement = models.BooleanField(default=False)
+	notes = models.TextField(blank=True,null=True)
 
 	class Meta:
 		verbose_name = "Vente"

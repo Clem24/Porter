@@ -18,8 +18,10 @@
 
     <form action="" method="post">
       {% csrf_token %}
+      {{ form.numero|as_crispy_field }}
       {{ form.date_brassin|as_crispy_field }}
       {{ form.recette|as_crispy_field }}
+      {{ form.fermenteur|as_crispy_field }}
 
       <br/>
       <h4>Brassage</h4>
@@ -55,7 +57,6 @@
           <div class="col-3">{{ form.temps_fermentation|as_crispy_field }}</div>
         </div>
 
-        {{ form.temperature_brassage|as_crispy_field }}
         {{ form.volume_rincage_dreches|as_crispy_field }}
         {{ form.volume_starter|as_crispy_field }}
         {{ form.resucrage|as_crispy_field }}
@@ -69,11 +70,10 @@
         <div class="col-6">
           {{ form.date_mise_bouteille|as_crispy_field }}
         </div>
-        <div class="col-6">
-          {{ form.nombre_bouteilles|as_crispy_field }}
-        </div>
 
       </div>
+
+        {{ form.archive|as_crispy_field }}
 
         {{ form.notes|as_crispy_field }}
 

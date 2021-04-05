@@ -3,7 +3,7 @@
 {% load static %}
 
 {% block css %}
-<link rel="stylesheet" href="{% static 'recette/css/style.css' %}" />
+<link rel="stylesheet" href="{% static 'brassin/css/style.css' %}" />
 {% endblock %}
 
 {% block content %}
@@ -18,12 +18,8 @@
   <br/><br/>
 
   {# TABLEAU RECETTES #}
-  <div class="md-form mt-0">
-    <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Recette-table-filter">
-  </div>
-  <br/>
 
-  <table class="table" id="Recette-table">
+  <table class="table table-responsive" id="Recette-table">
     <thead class="thead-light">
       <tr>
         <th>Nom</th>

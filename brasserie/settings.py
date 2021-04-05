@@ -109,7 +109,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/2.0/topics/i18n/
 
-LOGIN_URL = '/brassin/connexion'
+LOGIN_URL = '/brasserie/connexion'
 
 LANGUAGE_CODE = 'fr'
 
@@ -134,4 +134,4 @@ MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 STATIC_URL = '/static/'
 
-
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # During development only

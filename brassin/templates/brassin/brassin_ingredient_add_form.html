@@ -12,11 +12,20 @@
 <div class="jumbotron jumbotron-fluid">
   <div class="container">
     <h1 class="page-header">Brassin</h1>
-    <h4>Brassin {{ form.brassin.value }}<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'brassin_consult' form.brassin.value %}"><i class="fas fa-backspace"></i></a>
+    <h4>Brassin {{ b.numero }} - Ajouter ingredient<a class="btn btn-outline-warning btn-sm float-right" href="{% url 'brassin_consult' form.brassin.value %}"><i class="fas fa-backspace"></i></a>
     </h4>
-    <h5>Ajouter ingredient</h5>
+    <h5>{{b.date_brassin}}</h5>
   </div>
 </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success alert-dismissible {{ message.tags }}" role="alert">
+        {{ message }}
+        <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+        {% endfor %}
+    {% endif %}
 
 <div class="card h-100">
 
@@ -27,34 +36,52 @@
 
             {{ form.brassin|as_crispy_field }}
 
-             <div class="row">
-                <div class="col-4">
+             <div class="form-row align-items-center">
+                <div class="col-3">
                     {{ form.ingredient|as_crispy_field }}
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     {{ form.quantite|as_crispy_field }}
                 </div>
-                <div class="col-4">
+                <div class="col-3">
                     {{ form.temps_infusion|as_crispy_field }}
+                </div>
+                <div class="col-3 justify-content-center">
+                    </br>
+                    <button type="submit" class="btn btn-info">Ajouter</button>
                 </div>
              </div>
 
             {{ form.achete|as_crispy_field }}
 
 
-            <button type="submit" class="btn btn-info">Ajouter</button>
-            <a class="btn btn-success float-right" href="{% url 'brassin_consult' form.brassin.value %}">OK</i></a>
         </form>
 
+        <table class="table table-hover table-responsive">
+				<thead>
+				    <tr><th>Type</th><th>Variété</th><th>Quantité</th><th></th></tr>
+				</thead>
+				<tbody>
+					{% for ingredient in brassin_ingredient.all %}
+
+					<tr>
+					    <td><a data-toggle="tooltip" title="{{ ingredient.ingredient.propriete }}">{{ ingredient.ingredient.type_ingredient }}</a></td>
+    					<td><a data-toggle="tooltip" title="{{ ingredient.ingredient.propriete }}">{{ ingredient.ingredient.variete }}</a></td>
+    					<td> {% if ingredient.quantite < 1 %}{% widthratio ingredient.quantite 1 1000 %} g{% else %}{{ ingredient.quantite|floatformat }} kg{% endif %}</td>
+    					<td><a class="btn btn-outline-danger btn-sm" href="{% url 'brassin_ingredient_delete' b=b.id pk=ingredient.id %}"><i class="fas fa-times"></i></a></td>
+					</tr>
+					{% empty %}
+				    <tr>
+				        <td colspan="4" class="text-center bg-warning">Pas encore d'ingredient.</td>
+				    </tr>
+					{% endfor %}
+				</tbody>
+			</table>
+
+			<a class="btn btn-success float-right" href="{% url 'brassin_consult' form.brassin.value %}">OK</i></a>
+
         <br/>
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-success alert-dismissible {{ message.tags }}" role="alert">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
-            {% endfor %}
-        {% endif %}
+
 
     </div>
 
@@ -69,12 +96,11 @@
     $("#id_ingredient").on('change', function() {
         var ing = $(this);
         $('#div_id_temps_infusion').hide();
-        $('#id_quantite').attr("placeholder", "kg");
 
         var text = $("option:selected",ing).text();
-        if (text.match(/Levure.*/)) {$('#id_quantite').attr("placeholder", "paquets");}
         if (text.match(/Houblon.*/)){$('#div_id_temps_infusion').show();}
         if (text.match(/Malt.*/)){$('#div_id_temps_infusion').show();}
+        if (text.match(/Autre.*/)){$('#div_id_temps_infusion').show();}
    });
   </script>
 {% endblock %}

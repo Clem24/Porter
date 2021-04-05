@@ -11,25 +11,33 @@
 <div class="jumbotron jumbotron-fluid">
   <div class="container">
     <h1 class="page-header">Ventes</h1>
-    <h4>TOTAL: {{ total_recettes|floatformat }} € ({{ total_bouteilles_vendues|floatformat }} bouteilles)</h4>
+    <h4>TOTAL: {{ total_recettes|floatformat }} €</h4>
+    </br>
+    <form action="{% url 'ventes_list' %}" method="post" class="form-inline">
+      {% csrf_token %}
+      <input type="date" id="date_s" name="date_s" class="form-control">
+      <input type="date" id="date_e" name="date_e" class="form-control">
+      <button type="submit" class="btn btn-dark">Filtrer</button>
+    </form>
   </div>
 </div>
 
 <a class="btn btn-info btn-sm" href="{% url 'vente_create' %}"><i class="fas fa-plus"></i>  Ajouter vente</a>
 <br/><br/>
 
-{# TABLEAU INGREDIENTS #}
-<div class="md-form mt-0">
-  <input class="form-control w-25" type="text" placeholder="Rechercher" aria-label="Search" id="Vente-table-filter">
-</div>
+<div id="chart_ventes_month"></div>
+
 <br/>
+
+{# TABLEAU VENTES #}
 
 <table class="table" id="Vente-table">
   <thead class="thead-light">
     <tr>
       <th>Date</th>
       <th>Brassin</th>
-      <th>Bouteilles</th>
+      <th>Produit</th>
+      <th>Quantité</th>
       <th>Prix</th>
       <th>Client</th>
       <th>Par</th>
@@ -42,7 +50,8 @@
     {% for vente in ventes %}
     <tr>
       <td>{{ vente.date_vente }}</td>
-      <td><a href="{% url 'brassin_consult' vente.brassin.id %}">{{ vente.brassin }}</a></td>
+      <td><a href="{% url 'brassin_consult' vente.brassin_produit.brassin.id %}">{{ vente.brassin_produit.brassin }}</a></td>
+      <td>{{ vente.brassin_produit.produit}}</td>
       <td>{{ vente.quantite|floatformat}}</td>
       <td>{{ vente.prix|floatformat }} €</td>
       <td>{{ vente.client }}</td>
@@ -53,7 +62,7 @@
     </tr>
     {% empty %}
       <tr>
-        <td colspan="7" class="text-center bg-warning">Pas encore de vente.</td>
+        <td colspan="9" class="text-center bg-warning">Pas encore de vente.</td>
       </tr>
     {% endfor %}
   </tbody>
@@ -64,5 +73,44 @@
 {% block javascript %}
 
   <script type="text/javascript" src="{% static 'brassin/js/brassin.js' %}"></script>
+  <script>
+  $('#Vente-table').DataTable({
+        "info" : false,
+        "order": [[ 0, "desc" ]],
+        "language": {"url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"},
+        "columnDefs": [
+            { "orderable": false, "targets": [7, 8, 9] }
+        ]
+  });
+
+            Highcharts.chart('chart_ventes_month', {
+                chart: {type: 'column'},
+                title:{text:''},
+                legend:{enabled:false},
+                xAxis: {categories: [{% for entry in ventes_by_month %}'{{ entry.month|date:"b - Y" }}'{% if not forloop.last %}, {% endif %}{% endfor %}]},
+                yAxis: {
+                    min: 0,
+                    title: {
+                        text: 'Ventes (€)'
+                    }
+                },
+                tooltip: {
+                        headerFormat: '<span style="font-size:10px">{point.key}</span><table>',
+                        pointFormat: '<tr><td style="color:{series.color};padding:0">{series.name}: </td>' +
+                            '<td style="padding:0"><b>{point.y:.1f} €</b></td></tr>',
+                        footerFormat: '</table>',
+                        shared: true,
+                        useHTML: true
+                    },
+
+                series: [
+                    {
+                        name: 'Ventes',
+                        data: [{% for entry in ventes_by_month %}{{ entry.tot_by_month }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                        color: 'green'
+                    },
+                ]
+            });
+  </script>
 
 {% endblock %}

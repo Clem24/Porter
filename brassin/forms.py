@@ -1,6 +1,10 @@
 from django import forms
-from .models import note, brassin, recette, recette_ingredient,ingredient, brassin_ingredient, achat, vente
+from .models import Profile, Fermenteur, Produit, Ingredient, Recette, Note, Brassin, BrassinEtapeChauffe, BrassinProduit, BrassinIngredient, RecetteIngredient, Achat, Vente
 from bootstrap_datepicker_plus import DatePickerInput, TimePickerInput
+from django.core.exceptions import ValidationError
+from django.db.models import Sum
+from decimal import *
+from django.utils.safestring import mark_safe
 
 class ConnexionForm(forms.Form):
     username = forms.CharField(label="Nom d'utilisateur", max_length=30)
@@ -8,9 +12,22 @@ class ConnexionForm(forms.Form):
 
 class NoteForm(forms.ModelForm):
 	class Meta:
-		model = note
+		model = Note
 		exclude = ['auteur','date']
 		fields = '__all__'
+
+class ProduitForm(forms.ModelForm):
+    contenance = forms.DecimalField(required=True, widget= forms.TextInput(attrs={'placeholder':'L'}))
+    prix = forms.DecimalField(required=False,widget= forms.TextInput(attrs={'placeholder':'€/L'}))
+    class Meta:
+        model = Produit
+        fields = '__all__'
+
+class FermenteurForm(forms.ModelForm):
+    volume = forms.DecimalField(required=True, widget= forms.TextInput(attrs={'placeholder':'L'}))
+    class Meta:
+        model = Fermenteur
+        fields = '__all__'
 
 class BrassinForm(forms.ModelForm):
 	volume_empatage = forms.DecimalField(required=False, max_digits=6, min_value=0,widget= forms.TextInput(attrs={'placeholder':'L'}))
@@ -19,10 +36,9 @@ class BrassinForm(forms.ModelForm):
 	volume_starter = forms.DecimalField(required=False, max_digits=6, min_value=0,widget= forms.TextInput(attrs={'placeholder':'L'}))
 	volume_rincage_dreches = forms.DecimalField(required=False, max_digits=6, min_value=0,widget= forms.TextInput(attrs={'placeholder':'L'}))
 	resucrage = forms.DecimalField(required=False, max_digits=2, min_value=0,widget= forms.TextInput(attrs={'placeholder':'g/L'}))
-	temperature_brassage = forms.DecimalField(required=False, max_digits=3, min_value=0,widget= forms.TextInput(attrs={'placeholder':'°C'}))
 
 	class Meta:
-		model = brassin
+		model = Brassin
 		exclude = ['ingredient']
 		attrs = {'class':'form-control'}
 		widgets = {
@@ -32,27 +48,48 @@ class BrassinForm(forms.ModelForm):
 			'temps_fermentation': TimePickerInput(),
 			'temps_ebullition': TimePickerInput(),}
 
+class BrassinEtapeChauffeForm(forms.ModelForm):
+    temperature = forms.DecimalField(required=False, max_digits=3, min_value=0,widget= forms.TextInput(attrs={'placeholder':'°C'}))
+
+    class Meta:
+        model = BrassinEtapeChauffe
+        fields = '__all__'
+        attrs = {'class':'form-control'}
+        labels = {'numero': 'Etape n°','temps_etape': 'Durée'}
+        widgets = {
+            'brassin': forms.HiddenInput(),
+            'temps_etape': TimePickerInput(),}
+
 class BrassinIngredientForm(forms.ModelForm):
 	quantite = forms.DecimalField(required=True, max_digits=6, min_value=0,widget= forms.TextInput(attrs={'placeholder':'kg'}))
 
 	class Meta:
-		model = brassin_ingredient
+		model = BrassinIngredient
 		fields = '__all__'
 		widgets = {
 			'brassin': forms.HiddenInput(),
 			'quantite': forms.TextInput(attrs={'placeholder': 'kg'}),
 			'temps_infusion': TimePickerInput(),}
 
+class BrassinProduitForm(forms.ModelForm):
+	quantite = forms.DecimalField(required=True, max_digits=6, min_value=0)
+
+	class Meta:
+		model = BrassinProduit
+		fields = '__all__'
+		widgets = {
+			'brassin': forms.HiddenInput(),}
+
 class RecetteForm(forms.ModelForm):
 	class Meta:
-		model = recette
+		model = Recette
 		fields = '__all__'
 
 class RecetteIngredientForm(forms.ModelForm):
 	quantite = forms.DecimalField(required=True, max_digits=6, min_value=0)
 
 	class Meta:
-		model = recette_ingredient
+		model = RecetteIngredient
 		fields = '__all__'
 		widgets = {
 			'recette': forms.HiddenInput(),
@@ -68,20 +105,36 @@ class IngredientForm(forms.ModelForm):
 	attenuation_max = forms.DecimalField(required=False, max_digits=3, min_value=0,widget= forms.TextInput(attrs={'placeholder':'%'}))
 
 	class Meta:
-		model = ingredient
+		model = Ingredient
 		fields = '__all__'
 
 class AchatForm(forms.ModelForm):
 	class Meta:
-		model = achat
+		model = Achat
 		fields = '__all__'
 		widgets = {
 			'date_achat': DatePickerInput(format='%d/%m/%Y'),}
 
 class VenteForm(forms.ModelForm):
-    brassin = forms.ModelChoiceField(queryset=brassin.objects.exclude(date_mise_bouteille__isnull=True),initial=brassin.objects.exclude(date_mise_bouteille__isnull=True).latest('date_brassin'))
+    brassin_produit = forms.ModelChoiceField(queryset=BrassinProduit.objects.exclude(brassin__date_mise_bouteille__isnull=True))
+    prix = forms.DecimalField(required=False,widget= forms.TextInput(attrs={'placeholder':'€'}))
+    def clean_quantite(self):
+        data = self.cleaned_data['quantite']
+        bp_id =self['brassin_produit'].value()
+        total = BrassinProduit.objects.get(pk=bp_id).quantite
+        ventes_sum = Vente.objects.filter(brassin_produit=bp_id).aggregate(Sum('quantite')).get('quantite__sum',0.00)
+
+        if ventes_sum is None:
+            ventes_sum=0.00
+        dispo = Decimal(total) - Decimal(ventes_sum)
+
+        if data > dispo:
+            raise ValidationError('Pas assez de produit disponible, reste '+ str(dispo))
+        return data
+
     class Meta:
-        model = vente
+        model = Vente
+        labels = {'brassin_produit': 'Produit'}
         exclude = ['vendeur']
         widgets = {
 			'date_vente': DatePickerInput(format='%d/%m/%Y'),}
